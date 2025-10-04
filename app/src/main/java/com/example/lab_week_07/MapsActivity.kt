@@ -12,7 +12,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.example.lab_week_07.databinding.ActivityMapsBinding
-//import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -33,13 +33,44 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
             .create().show()
     }
+
     private fun getLastLocation() {
-        Log.d("MapsActivity", "getLastLocation() called.")
+        if (hasLocationPermission()) {
+            try {
+                fusedLocationProviderClient.lastLocation
+                    .addOnSuccessListener { location: Location? ->
+                        location?.let {
+                            val userLocation = LatLng(it.latitude, it.longitude)
+                            updateMapLocation (userLocation)
+                            addMarkerAtLocation (userLocation, "You")
+                        }
+                    }
+            } catch (e: SecurityException) {
+                Log.e("MapsActivity", "Security Exception: ${e.message}")
+                requestPermissionLauncher.launch (ACCESS_FINE_LOCATION)
+            }
+        } else {
+        }
     }
+
+    private fun updateMapLocation (location: LatLng) {
+        mMap.moveCamera (CameraUpdateFactory.newLatLngZoom(
+            location, 7f))
+    }
+
+    private fun addMarkerAtLocation (location: LatLng, title: String) {
+        mMap.addMarker (MarkerOptions().title(title)
+            .position(location))
+    }
+
     private lateinit var mMap: GoogleMap
     private lateinit var binding: ActivityMapsBinding
 
     private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
+
+    private val fusedLocationProviderClient by lazy {
+        LocationServices.getFusedLocationProviderClient(this)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
