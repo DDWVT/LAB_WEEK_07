@@ -105,6 +105,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
      * installed Google Play services and returned to the app.
      */
     override fun onMapReady (googleMap: GoogleMap) {
+        Log.d("MapsActivity", "API Key loaded successfully!")
         mMap = googleMap
 
         when {
